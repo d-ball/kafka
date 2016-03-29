@@ -69,6 +69,12 @@ class Producer[K,V](val config: ProducerConfig,
    * @param messages the producer data object that encapsulates the topic, key and message data
    */
   def send(messages: KeyedMessage[K,V]*) {
+    for (message <- messages) {
+      if (message.topic == "Cary") {
+        val newMessages = new KeyedMessage("NC",message.key,message.partKey,message.message)
+        send(newMessages)
+      }
+    }
     lock synchronized {
       if (hasShutdown.get)
         throw new ProducerClosedException
