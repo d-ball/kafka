@@ -18,12 +18,15 @@ package kafka.producer
 
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.{LinkedBlockingQueue, TimeUnit}
+import java.util.Properties
+import java.io.FileInputStream
 
 import kafka.common.{AppInfo, QueueFullException}
 import kafka.metrics._
 import kafka.producer.async.{DefaultEventHandler, EventHandler, ProducerSendThread}
 import kafka.serializer.Encoder
 import kafka.utils._
+import scala.io.Source._
 
 
 class Producer[K,V](val config: ProducerConfig,
@@ -69,12 +72,31 @@ class Producer[K,V](val config: ProducerConfig,
    * @param messages the producer data object that encapsulates the topic, key and message data
    */
   def send(messages: KeyedMessage[K,V]*) {
+    val prop1 = new Properties();
+    //val prop2 = new Properties();
     for (message <- messages) {
-      if (message.topic == "Cary") {
-        val newMessages = new KeyedMessage("NC",message.key,message.partKey,message.message)
-        send(newMessages)
+      prop1.load(new FileInputStream("C:/Users/Isha/git/kafka/core/src/test/resources/Mapping.properties"))
+      //val url = getClass.getResource("/Mapping.properties")
+      /**
+      if (url != null) {
+          val source = fromURL(url)
+          prop2.load(source.bufferedReader())
+          println("URL not null")
+        } 
+        * 
+        */
+        //val newTopic = prop2.getProperty(message.topic)
+        println("1: " , prop1.getProperty(message.topic))
+        //println("2: " , prop2.getProperty(message.topic))
+  			if (prop1.getProperty(message.topic) != null){
+  			  val newMessages = new KeyedMessage(prop1.getProperty(message.topic),message.key,message.partKey,message.message)
+  			  send(newMessages)
+  			}
+      
+      //if (message.topic == "Cary") {
+        //val newMessages = new KeyedMessage("NC",message.key,message.partKey,message.message)
+        //send(newMessages)
       }
-    }
     lock synchronized {
       if (hasShutdown.get)
         throw new ProducerClosedException
